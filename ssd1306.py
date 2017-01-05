@@ -1,11 +1,15 @@
-# MicroPython SSD1306 OLED driver, I2C and _NEH_SPI interfaces
+# MicroPython SSD1306 OLED driver + I2C
+# Author : Colin J. Brigato <colin@brigato.fr>
 
-from micropython import const  # verfify id needed
+# See https://github.com/micropython/micropython/issues/573
+from micropython import const 
 import time
 import framebuf
 
 
 # register definitions
+# See https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf
+# Using const() implementation extension from CPython as C's "define"ment
 SET_CONTRAST = const(0x81)
 SET_ENTIRE_ON = const(0xa4)
 SET_NORM_INV = const(0xa6)
@@ -26,6 +30,9 @@ SET_CHARGE_PUMP = const(0x8d)
 
 
 class SSD1306:
+"""
+Main SSD1306 Driver, see the I2C inherited class for I2C driven implementation
+"""
 
     def __init__(self, width, height, external_vcc):
         self.width = width
@@ -89,7 +96,6 @@ class SSD1306:
         self.write_cmd(0)
         self.write_cmd(self.pages - 1)
         self.write_data(self.buffer)
-        # self.write_framebuf()
 
     def fill(self, col):
         self.framebuf.fill(col)
@@ -105,31 +111,20 @@ class SSD1306:
 
 
 class SSD1306_I2C(SSD1306):
+"""
+I2C Driven inheritance
+"""
 
     def __init__(self, width, height, i2c, addr=0x3c, external_vcc=False):
         self.i2c = i2c
         self.addr = addr
         self.temp = bytearray(2)
-        # Add an extra byte to the data buffer to hold an I2C data/command byte
-        # to use hardware-compatible I2C transactions.  A memoryview of the
-        # buffer is used to mask this byte from the framebuffer operations
-        # (without a major memory hit as memoryview doesn't copy to a separate
-        # buffer).
-        #self.buffer = bytearray(((height // 8) * width) + 1)
-        # self.buffer[0] = 0x40  # Set first byte of data buffer to Co=0, D/C=1
-        # self.framebuf = framebuf.FrameBuffer1(
-        #    memoryview(self.buffer)[1:], width, height)
         super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
         self.temp[0] = 0x80  # Co=1, D/C#=0
         self.temp[1] = cmd
         self.i2c.writeto(self.addr, self.temp)
-
-    # def write_framebuf(self):
-        # Blast out the frame buffer using a single I2C transaction to support
-        # hardware I2C interfaces.
-        #self.i2c.writeto(self.addr, self.buffer)
 
     def write_data(self, buf):
         self.temp[0] = self.addr << 1
@@ -143,41 +138,5 @@ class SSD1306_I2C(SSD1306):
         pass
 
 """
-class SSD1306_SPI(SSD1306):
-
-    def __init__(self, width, height, spi, dc, res, cs, external_vcc=False):
-        self.rate = 10 * 1024 * 1024
-        dc.init(dc.OUT, value=0)
-        res.init(res.OUT, value=0)
-        cs.init(cs.OUT, value=1)
-        self.spi = spi
-        self.dc = dc
-        self.res = res
-        self.cs = cs
-        self.buffer = bytearray((height // 8) * width)
-        self.framebuf = framebuf.FrameBuffer1(self.buffer, width, height)
-        super().__init__(width, height, external_vcc)
-
-    def write_cmd(self, cmd):
-        self.spi.init(baudrate=self.rate, polarity=0, phase=0)
-        self.cs.high()
-        self.dc.low()
-        self.cs.low()
-        self.spi.write(bytearray([cmd]))
-        self.cs.high()
-
-    def write_framebuf(self):
-        self.spi.init(baudrate=self.rate, polarity=0, phase=0)
-        self.cs.high()
-        self.dc.high()
-        self.cs.low()
-        self.spi.write(self.buffer)
-        self.cs.high()
-
-    def poweron(self):
-        self.res.high()
-        time.sleep_ms(1)
-        self.res.low()
-        time.sleep_ms(10)
-        self.res.high()
+We dismantled the SPI Class because it is of no use here
 """

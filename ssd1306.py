@@ -106,7 +106,7 @@ Main SSD1306 Driver, see the I2C inherited class for I2C driven implementation
     def scroll(self, dx, dy):
         self.framebuf.scroll(dx, dy)
 
-    def text(self, string, x, y, col=1):
+    def text(self, string, x, y, col=0):
         self.framebuf.text(string, x, y, col)
 
 

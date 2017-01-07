@@ -24,16 +24,16 @@ class ApouiControl:
     relayurl = 'http://control.maison.apoui.net/setrelay'
 
     @classmethod
-    def relay_on(relay):
-        url = '{0}/on/{1}'.format(relayurl, relay)
+    def relay_on(self, relay):
+        url = '{0}/on/{1}'.format(self.relayurl, relay)
         self._http_get(url)
 
     @classmethod
-    def relay_off(relay):
-        url = '{0}/off/{1}'.format(relayurl, relay)
+    def relay_off(self, relay):
+        url = '{0}/off/{1}'.format(self.relayurl, relay)
         self._http_get(url)
 
-    def _http_get(url):
+    def _http_get(self, url):
         _, _, host, path = url.split('/', 3)
         addr = socket.getaddrinfo(host, 80)[0][-1]
         s = socket.socket()
@@ -56,23 +56,25 @@ class MicroWifi:
         self.key = key
         self.do_connect(self.ssid, self.key)
 
-    def do_connect(ssid, key):
+    def do_connect(self, ssid, key):
         sta_if = network.WLAN(network.STA_IF)
         if not sta_if.isconnected():
-            oled.text('WIFI:',0,10)
+            oled.text('>WIFI:', 0, 10)
             oled.show()
             sta_if.active(True)
             sta_if.connect(ssid, key)
             while not sta_if.isconnected():
                 pass
-        oled.text('OK',10,10)
+        oled.text('OK', 7, 10)
         oled.show()
-        
+
 
 def main():
-    oled.text("KERNEL:OK",0,0)
+    oled.text(">KERNEL", 0, 0)
     oled.show()
     # We should have a list of wifi we can try to connect to ?
     #[i for i, v in enumerate(network.WLAN(network.STA_IF).scan()) if v[0] == 'excellency']
     wifi = MicroWifi.do_connect(
         'APOUI', 'astis4-maledictio6-pultarius-summittite')
+
+main()

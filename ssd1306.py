@@ -2,7 +2,7 @@
 # Author : Colin J. Brigato <colin@brigato.fr>
 
 # See https://github.com/micropython/micropython/issues/573
-from micropython import const 
+from micropython import const
 import time
 import framebuf
 
@@ -142,11 +142,13 @@ We dismantled the SPI Class because it is of no use here
 """
 
 
-# writer.py Implements the Writer class.
-# V0.2 Peter Hinch Dec 2016: supports updated framebuf module.
-# It needs font-to-py.py to generate fonts
-
 class Writer(object):
+    """
+    writer.py Implements the Writer class.
+    V0.2 Peter Hinch Dec 2016: supports updated framebuf module.
+    It needs font-to-py.py to generate fonts
+    classmethods are quite uglities
+    """
     text_row = 0        # attributes common to all Writer instances
     text_col = 0
     row_clip = False    # Clip or scroll when screen full
@@ -185,6 +187,7 @@ class Writer(object):
         for char in string:
             self._printchar(char)
 
+    # has it really to be private ?
     def _printchar(self, char):
         if char == '\n':
             self._newline()

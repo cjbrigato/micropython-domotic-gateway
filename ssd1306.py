@@ -141,14 +141,14 @@ I2C Driven inheritance
 We dismantled the SPI Class because it is of no use here
 """
 
-
+"""
 class Writer(object):
-    """
-    writer.py Implements the Writer class.
-    V0.2 Peter Hinch Dec 2016: supports updated framebuf module.
-    It needs font-to-py.py to generate fonts
-    classmethods are quite uglities
-    """
+
+    # writer.py Implements the Writer class.
+    # V0.2 Peter Hinch Dec 2016: supports updated framebuf module.
+    # It needs font-to-py.py to generate fonts
+    # classmethods are quite uglities
+    
     text_row = 0        # attributes common to all Writer instances
     text_col = 0
     row_clip = False    # Clip or scroll when screen full
@@ -218,3 +218,4 @@ class Writer(object):
                 device.pixel(dcol, drow, data & (1 << gbit))
                 drow += 1
         Writer.text_col += char_width
+"""

@@ -2,8 +2,7 @@ import machine
 import network
 import socket
 
-import font
-from ssd1306 import SSD1306_I2C, Writer
+from ssd1306 import SSD1306_I2C
 
 """ Constants """
 WIDTH = const(64)
@@ -12,9 +11,9 @@ pscl = machine.Pin(5)  # GPIO4_CLK , machine.Pin.OUT_PP)
 psda = machine.Pin(4)  # GPIO5_DAT, machine.Pin.OUT_PP)
 i2c = machine.I2C(scl=pscl, sda=psda)
 oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)
-writer = Writer(oled, source_code_pro_ttf_11)
+#writer = Writer(oled, font)
 # This is ugly classmethod
-Writer.set_clip(True, True)
+#Writer.set_clip(True, True)
 
 
 class ApouiControl:
@@ -60,21 +59,18 @@ class MicroWifi:
     def do_connect(ssid, key):
         sta_if = network.WLAN(network.STA_IF)
         if not sta_if.isconnected():
-            writer.printstring('WIFI:')
+            oled.text('WIFI:',0,10)
             oled.show()
             sta_if.active(True)
             sta_if.connect(ssid, key)
             while not sta_if.isconnected():
                 pass
-        writer.printstring('OK\n')
+        oled.text('OK',10,10)
         oled.show()
-        writer.printstring('Ready\n')
-        oledshow()
-
+        
 
 def main():
-    writer.printstring('KERNEL:OK')
-    writer.printstring('\n')
+    oled.text("KERNEL:OK",0,0)
     oled.show()
     # We should have a list of wifi we can try to connect to ?
     #[i for i, v in enumerate(network.WLAN(network.STA_IF).scan()) if v[0] == 'excellency']

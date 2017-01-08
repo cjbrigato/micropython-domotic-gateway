@@ -2,6 +2,8 @@ import machine
 import network
 import socket
 
+from cmd import Cmd
+
 from ssd1306 import SSD1306_I2C
 
 """ Constants """
@@ -16,6 +18,22 @@ oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)
 #Writer.set_clip(True, True)
 
 
+class ApouiShell(Cmd):
+
+    def do_hello(self, args):
+        """Says hello. If you provide a name, it will greet you with it."""
+        if len(args) == 0:
+            name = 'stranger'
+        else:
+            name = args
+        print("Hello, %s" % name)
+
+    def do_quit(self, args):
+        """Quits the program."""
+        print("Quitting.")
+        raise SystemExit
+
+
 class ApouiControl:
     """ 
     This is firt Domotic Controller
@@ -24,6 +42,7 @@ class ApouiControl:
 
     def __init__(self, relayurl):
         self.relayurl = relayurl
+        self._boot_tests('1')
 
     def relay_on(self, relay):
         url = '{0}/{1}/on'.format(self.relayurl, relay)
@@ -50,6 +69,10 @@ class ApouiControl:
         """
         s.close()
 
+    def _boot_tests(self, relay):
+        self.relay_off(relay)
+        self.relay_on(relay)
+
 
 class MicroWifi:
     """Connector to the Wifi"""
@@ -72,6 +95,7 @@ class MicroWifi:
         oled.show()
 
 
+    
 def main():
     oled.text(">KERNEL", 0, 0)
     oled.show()
@@ -79,9 +103,10 @@ def main():
     #[i for i, v in enumerate(network.WLAN(network.STA_IF).scan()) if v[0] == 'excellency']
     wifi = MicroWifi('APOUI', 'astis4-maledictio6-pultarius-summittite')
     controller = ApouiControl('http://control.maison.apoui.net/setrelay')
-    controller.relay_off('1')
-    controller.relay_on('1')
-    controller.relay_off('2')
-    controller.relay_on('2')
+    oled.text('>TESTS:OK',0,20)
+    oled.show()
+    prompt = ApouiShell()
+    prompt.prompt = 'apoui@homecontroller ~> '
+    prompt.cmdloop('Ready. Spawning ApouiShell')
 
 main()

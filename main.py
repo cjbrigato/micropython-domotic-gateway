@@ -18,19 +18,19 @@ oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)
 
 class ApouiControl:
     """ 
+    This is firt Domotic Controller
     This has to be used to a shell class of sort
-    This is just a temporary namespace
     """
-    relayurl = 'http://control.maison.apoui.net/setrelay'
 
-    @classmethod
+    def __init__(self, relayurl):
+        self.relayurl = relayurl
+
     def relay_on(self, relay):
-        url = '{0}/on/{1}'.format(self.relayurl, relay)
+        url = '{0}/{1}/on'.format(self.relayurl, relay)
         self._http_get(url)
 
-    @classmethod
     def relay_off(self, relay):
-        url = '{0}/off/{1}'.format(self.relayurl, relay)
+        url = '{0}/{1}/off'.format(self.relayurl, relay)
         self._http_get(url)
 
     def _http_get(self, url):
@@ -40,12 +40,15 @@ class ApouiControl:
         s.connect(addr)
         s.send(bytes('GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n' %
                      (path, host), 'utf8'))
+        """ Tempory buh
         while True:
-            data = s.recv(100)
+            data = s.recv(8192)
             if data:
                 print(str(data, 'utf8'), end='')
             else:
                 break
+        """
+        s.close()
 
 
 class MicroWifi:
@@ -54,9 +57,9 @@ class MicroWifi:
     def __init__(self, ssid, key):
         self.ssid = ssid
         self.key = key
-        self.do_connect(self.ssid, self.key)
+        self._do_connect(self.ssid, self.key)
 
-    def do_connect(self, ssid, key):
+    def _do_connect(self, ssid, key):
         sta_if = network.WLAN(network.STA_IF)
         if not sta_if.isconnected():
             oled.text('>WIFI:', 0, 10)
@@ -65,7 +68,7 @@ class MicroWifi:
             sta_if.connect(ssid, key)
             while not sta_if.isconnected():
                 pass
-        oled.text('OK', 7, 10)
+        oled.text('OK', 48, 10,)
         oled.show()
 
 
@@ -74,7 +77,11 @@ def main():
     oled.show()
     # We should have a list of wifi we can try to connect to ?
     #[i for i, v in enumerate(network.WLAN(network.STA_IF).scan()) if v[0] == 'excellency']
-    wifi = MicroWifi.do_connect(
-        'APOUI', 'astis4-maledictio6-pultarius-summittite')
+    wifi = MicroWifi('APOUI', 'astis4-maledictio6-pultarius-summittite')
+    controller = ApouiControl('http://control.maison.apoui.net/setrelay')
+    controller.relay_off('1')
+    controller.relay_on('1')
+    controller.relay_off('2')
+    controller.relay_on('2')
 
 main()

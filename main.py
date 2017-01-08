@@ -85,26 +85,32 @@ class MicroWifi:
     def _do_connect(self, ssid, key):
         sta_if = network.WLAN(network.STA_IF)
         if not sta_if.isconnected():
-            oled.text('>WIFI:', 0, 10)
+            oled.text('>WIFI:', 0, 20)
             oled.show()
             sta_if.active(True)
             sta_if.connect(ssid, key)
             while not sta_if.isconnected():
                 pass
-        oled.text('OK', 48, 10,)
+        oled.text('OK', 48, 20,)
         oled.show()
 
 
-    
-def main():
-    oled.text(">KERNEL", 0, 0)
+def boot(productstate):
+    oled.text("->KERNEL", 0, 0)
+    oled.show()
+    oled.text(productstate,0,10)
     oled.show()
     # We should have a list of wifi we can try to connect to ?
     #[i for i, v in enumerate(network.WLAN(network.STA_IF).scan()) if v[0] == 'excellency']
     wifi = MicroWifi('APOUI', 'astis4-maledictio6-pultarius-summittite')
     controller = ApouiControl('http://control.maison.apoui.net/setrelay')
-    oled.text('>TESTS:OK',0,20)
+    oled.text('>TESTS:1',0,30)
     oled.show()
+    oled.text(" [READY]",0,40)
+    oled.show()
+    
+def main():
+    boot('>V:A0B')
     prompt = ApouiShell()
     prompt.prompt = 'apoui@homecontroller ~> '
     prompt.cmdloop('Ready. Spawning ApouiShell')

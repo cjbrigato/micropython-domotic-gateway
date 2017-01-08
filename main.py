@@ -13,25 +13,38 @@ pscl = machine.Pin(5)  # GPIO4_CLK , machine.Pin.OUT_PP)
 psda = machine.Pin(4)  # GPIO5_DAT, machine.Pin.OUT_PP)
 i2c = machine.I2C(scl=pscl, sda=psda)
 oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)
-#writer = Writer(oled, font)
-# This is ugly classmethod
-#Writer.set_clip(True, True)
 
 
 class ApouiShell(Cmd):
 
-    def do_hello(self, args):
-        """Says hello. If you provide a name, it will greet you with it."""
+    def __init__(self,  controller):
+        super().__init__()
+        self.controller = controller
+
+    def do_relay_off(self, args):
         if len(args) == 0:
-            name = 'stranger'
+            print("<< Relay id ?")
+        elif len(args) == 1:
+            relay = args
+            self.controller.relay_off(relay)
+            print(">> Shut Relay {0} Down".format(relay))
         else:
-            name = args
-        print("Hello, %s" % name)
+            print("<< Ambigous : {0}".format(args))
+
+    def do_relay_on(self, args):
+        if len(args) == 0:
+            print("<< Relay id ?")
+        elif len(args) == 1:
+            relay = args
+            self.controller.relay_on(relay)
+            print(">> Lighted Relay {0} Up".format(relay))
+        else:
+            print("<< Ambigous : {0}".format(args))
 
     def do_quit(self, args):
         """Quits the program."""
         print("Quitting.")
-        raise SystemExit
+        machine.reset()
 
 
 class ApouiControl:
@@ -98,21 +111,23 @@ class MicroWifi:
 def boot(productstate):
     oled.text("->KERNEL", 0, 0)
     oled.show()
-    oled.text(productstate,0,10)
+    oled.text(productstate, 0, 10)
     oled.show()
     # We should have a list of wifi we can try to connect to ?
     #[i for i, v in enumerate(network.WLAN(network.STA_IF).scan()) if v[0] == 'excellency']
     wifi = MicroWifi('APOUI', 'astis4-maledictio6-pultarius-summittite')
     controller = ApouiControl('http://control.maison.apoui.net/setrelay')
-    oled.text('>TESTS:1',0,30)
+    oled.text('>TESTS:1', 0, 30)
     oled.show()
-    oled.text(" [READY]",0,40)
+    oled.text(" [READY]", 0, 40)
     oled.show()
-    
+    return controller
+
+
 def main():
-    boot('>V:A0B')
-    prompt = ApouiShell()
-    prompt.prompt = 'apoui@homecontroller ~> '
-    prompt.cmdloop('Ready. Spawning ApouiShell')
+    controller = boot('>V:A0B')
+    shell = ApouiShell(controller)
+    shell.prompt = 'apoui@hc> '
+    shell.cmdloop('Ready. Spawning ApouiShell')
 
 main()
